@@ -11,6 +11,68 @@
 
 namespace ph {
 
+namespace {
+
+struct ShortenedCount {
+	int64 number = 0;
+	QString string;
+};
+
+ShortenedCount FormatCountToShort(int64 number) {
+	auto result = ShortenedCount{ number };
+	const auto abs = std::abs(number);
+	const auto shorten = [&](int64 divider, char multiplier) {
+		const auto sign = (number > 0) ? 1 : -1;
+		const auto rounded = abs / (divider / 10);
+		result.string = QString::number(sign * rounded / 10);
+		if (rounded % 10) {
+			result.string += '.' + QString::number(rounded % 10) + multiplier;
+		} else {
+			result.string += multiplier;
+		}
+		// Update given number.
+		// E.g. 12345 will be 12000.
+		result.number = rounded * divider;
+	};
+	if (abs >= 1'000'000) {
+		shorten(1'000'000, 'M');
+	} else if (abs >= 10'000) {
+		shorten(1'000, 'K');
+	} else {
+		result.string = QString::number(number);
+	}
+	return result;
+}
+
+QString ChoosePlural(float64 value, QString one, QString few, QString many, QString other) {
+	// To correctly select a shift for PluralType::Short
+	// we must first round the number.
+	const auto shortened = FormatCountToShort(qRound(value));
+
+	// Simplified.
+	const auto n = std::abs(shortened.number ? float64(shortened.number) : value);
+	const auto i = qFloor(n);
+	const auto integer = (qCeil(n) == i);
+	const auto formatted = integer ? QString() : FormatDouble(n);
+	const auto dot = formatted.indexOf('.');
+	const auto fraction = (dot >= 0) ? formatted.mid(dot + 1) : QString();
+	const auto v = fraction.size();
+
+	if (v == 0) {
+		const auto mod10 = (i % 10);
+		const auto mod100 = (i % 100);
+		if ((mod10 >= 2) && (mod10 <= 4) && (mod100 < 12 || mod100 > 14)) {
+			return few;
+		} else if ((mod10 == 1) && (mod100 != 11)) {
+			return one;
+		}
+		return many;
+	}
+	return other;
+}
+
+} // namespace
+
 const auto walletCountStart = start_phrase_count();
 
 phrase lng_wallet_cancel = "Cancel";
