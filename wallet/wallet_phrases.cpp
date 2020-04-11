@@ -260,34 +260,38 @@ phrase lng_wallet_downloaded = "{ready} / {total} {mb}";
 const auto walletCountValidate = check_phrase_count(Wallet::kPhrasesCount);
 
 Fn<phrase(int)> lng_wallet_refreshed_minutes_ago = [](int minutes) {
-	return (minutes == 1)
-		? "updated one minute ago"
-		: "updated " + QString::number(minutes) + " minutes ago";
+	return "обновлено " + QString::number(minutes)
+		+ ChoosePlural(
+			minutes,
+			" минуту назад",
+			" минуты назад",
+			" минут назад",
+			" минуты назад");
 };
 
 Fn<phrase(QDate)> lng_wallet_short_date = [](QDate date) {
 	const auto month = date.month();
 	const auto result = [&]() -> QString {
 		switch (month) {
-		case 1: return "January";
-		case 2: return "February";
-		case 3: return "March";
-		case 4: return "April";
-		case 5: return "May";
-		case 6: return "June";
-		case 7: return "July";
-		case 8: return "August";
-		case 9: return "September";
-		case 10: return "October";
-		case 11: return "November";
-		case 12: return "December";
+		case 1: return "января";
+		case 2: return "февраля";
+		case 3: return "марта";
+		case 4: return "апреля";
+		case 5: return "мая";
+		case 6: return "июня";
+		case 7: return "июля";
+		case 8: return "августа";
+		case 9: return "сентября";
+		case 10: return "октября";
+		case 11: return "ноября";
+		case 12: return "декабря";
 		}
 		return QString();
 	}();
 	if (result.isEmpty()) {
 		return result;
 	}
-	const auto small = result + ' ' + QString::number(date.day());
+	const auto small =  QString::number(date.day()) + ' ' + result;
 	const auto year = date.year();
 	const auto current = QDate::currentDate();
 	const auto currentYear = current.year();
@@ -310,7 +314,7 @@ Fn<phrase(QDate)> lng_wallet_short_date = [](QDate date) {
 		|| yearIsMuchGreater(currentYear, year)
 		|| monthIsMuchGreater(year, month, currentYear, currentMonth)
 		|| monthIsMuchGreater(currentYear, currentMonth, year, month)) {
-		return small + ", " + QString::number(year);
+		return small + " " + QString::number(year);
 	}
 	return small;
 };
@@ -320,13 +324,11 @@ Fn<phrase(QTime)> lng_wallet_short_time = [](QTime time) {
 };
 
 Fn<phrase(QString)> lng_wallet_grams_count = [](QString text) {
-	return text + ((text == "1") ? " Gram" : " Grams");
+	return text + " Gram";
 };
 
 Fn<phrase(QString)> lng_wallet_grams_count_sent = [](QString text) {
-	return text + ((text == "1")
-		? " Gram has been sent."
-		: " Grams have been sent.");
+	return text + " Gram успешно отправлено.";
 };
 
 } // namespace ph
