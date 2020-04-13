@@ -8,6 +8,7 @@
 
 #include <QtCore/QDate>
 #include <QtCore/QTime>
+#include <QtCore/QtMath>
 
 namespace ph {
 
