@@ -19,6 +19,17 @@ struct ShortenedCount {
 	QString string;
 };
 
+QString FormatDouble(float64 value) {
+	auto result = QString::number(value, 'f', 6);
+	while (result.endsWith('0')) {
+		result.chop(1);
+	}
+	if (result.endsWith('.')) {
+		result.chop(1);
+	}
+	return result;
+}
+
 ShortenedCount FormatCountToShort(int64 number) {
 	auto result = ShortenedCount{ number };
 	const auto abs = std::abs(number);
