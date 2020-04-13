@@ -87,185 +87,185 @@ QString ChoosePlural(float64 value, QString one, QString few, QString many, QStr
 
 const auto walletCountStart = start_phrase_count();
 
-phrase lng_wallet_cancel = "Cancel";
-phrase lng_wallet_continue = "Continue";
-phrase lng_wallet_done = "Done";
-phrase lng_wallet_save = "Save";
-phrase lng_wallet_warning = "Warning";
-phrase lng_wallet_error = "Error";
-phrase lng_wallet_ok = "OK";
+phrase lng_wallet_cancel = "Отмена";
+phrase lng_wallet_continue = "Продолжить";
+phrase lng_wallet_done = "Готово";
+phrase lng_wallet_save = "Сохранить";
+phrase lng_wallet_warning = "Внимание";
+phrase lng_wallet_error = "Ошибка";
+phrase lng_wallet_ok = "Ок";
 
-phrase lng_wallet_copy_address = "Copy Wallet Address";
+phrase lng_wallet_copy_address = "Копировать адрес кошелька";
 
 phrase lng_wallet_intro_title = "Gram Wallet";
-phrase lng_wallet_intro_description = "Gram wallet allows you to make fast and\nsecure blockchain-based payments\nwithout intermediaries.";
-phrase lng_wallet_intro_create = "Create My Wallet";
-phrase lng_wallet_intro_import = "Import existing wallet";
+phrase lng_wallet_intro_description = "Кошелёк Gram позволяет вам совершать быстрые\nи надёжные переводы на основе блокчейна\nбез посредников";
+phrase lng_wallet_intro_create = "Создать кошелёк";
+phrase lng_wallet_intro_import = "Импорт существующего кошелька";
 
-phrase lng_wallet_import_title = "24 Secret Words";
-phrase lng_wallet_import_description = "Please restore access to your wallet by\nentering the 24 secret words you wrote\ndown when creating the wallet.";
-phrase lng_wallet_import_dont_have = "I don't have them";
-phrase lng_wallet_import_incorrect_title = "Incorrect words";
-phrase lng_wallet_import_incorrect_text = "Sorry, you have entered incorrect secret words. Please double check and try again.";
-phrase lng_wallet_import_incorrect_retry = "Try again";
+phrase lng_wallet_import_title = "24 секретных слова";
+phrase lng_wallet_import_description = "Вы можете восстановить доступ к кошельку,\n введя 24 слова,\nкоторые вы записали при создании кошелька.";
+phrase lng_wallet_import_dont_have = "У меня их нет";
+phrase lng_wallet_import_incorrect_title = "Неверные слова";
+phrase lng_wallet_import_incorrect_text = "К сожалению, вы ввели неверные секретные слова. Пожалуйста, перепроверьте и попробуйте ещё раз.";
+phrase lng_wallet_import_incorrect_retry = "Ещё раз";
 
-phrase lng_wallet_too_bad_title = "Too Bad";
-phrase lng_wallet_too_bad_description = "Without the secret words, you can't\nrestore access to your wallet.";
-phrase lng_wallet_too_bad_enter_words = "Enter words";
+phrase lng_wallet_too_bad_title = "Очень плохо!";
+phrase lng_wallet_too_bad_description = "Без секретных слов вы не можете восстановить доступ к кошельку.";
+phrase lng_wallet_too_bad_enter_words = "Введите 24 секретных слова";
 
-phrase lng_wallet_created_title = "Congratulations";
-phrase lng_wallet_created_description = "Your Gram wallet has just been created.\nOnly you control it.\n\nTo be able to always have access to it,\nplease set up a secure password and write\ndown secret words.";
+phrase lng_wallet_created_title = "Поздравляем!";
+phrase lng_wallet_created_description = "Ваш Gram-колешёк был создан.\nТолько вы его контролируете.\n\nЧтобы не потерять к нему доступ,\nзапишите секретные слова и установите надёжный пароль.";
 
-phrase lng_wallet_words_title = "24 secret words";
-phrase lng_wallet_words_description = "Write down these 24 words in the correct\norder and store them in a secret place.\n\nUse these secret words to restore access to\nyour wallet if you lose your password or\naccess to this device.";
-phrase lng_wallet_words_sure_title = "Sure done?";
-phrase lng_wallet_words_sure_text = "You didn't have enough time to write these words down.";
-phrase lng_wallet_words_sure_ok = "OK, Sorry";
+phrase lng_wallet_words_title = "24 секретных слова";
+phrase lng_wallet_words_description = "Запишите эти 24 слова в правильном порядке, и сохраните их в надёжном месте.\n\nИспользуйте эти секретные слова для восстановления доступа к кошельку, если вы потеряете пароль или аккаунт Telegram.";
+phrase lng_wallet_words_sure_title = "Точно готово?";
+phrase lng_wallet_words_sure_text = "Вы потратили недостаточно времени для записи слов.";
+phrase lng_wallet_words_sure_ok = "Oк, простите";
 
-phrase lng_wallet_check_title = "Test Time!";
-phrase lng_wallet_check_description = "Now let's check that you wrote your secret\nwords correctly.\n\nPlease enter the words {index1}, {index2} and {index3} below:";
-phrase lng_wallet_check_incorrect_title = "Incorrect words";
-phrase lng_wallet_check_incorrect_text = "The secret words you have entered do not match the ones in the list.";
-phrase lng_wallet_check_incorrect_view = "See words";
-phrase lng_wallet_check_incorrect_retry = "Try again";
+phrase lng_wallet_check_title = "Время теста!";
+phrase lng_wallet_check_description = "Теперь давайте проверим, записали ли вы секретные слова правильно.\n\nВведите слова под номерами {index1}, {index2} и {index3} ниже:";
+phrase lng_wallet_check_incorrect_title = "Неверные слова";
+phrase lng_wallet_check_incorrect_text = "Введённые вами секретные слова не совпадают с теми, что были в списке.";
+phrase lng_wallet_check_incorrect_view = "Просмотреть слова";
+phrase lng_wallet_check_incorrect_retry = "Ещё раз";
 
-phrase lng_wallet_set_passcode_title = "Secure Password";
-phrase lng_wallet_set_passcode_description = "Please choose a secure password\nfor confirming your payments.";
-phrase lng_wallet_set_passcode_enter = "Enter your password";
-phrase lng_wallet_set_passcode_repeat = "Repeat your password";
+phrase lng_wallet_set_passcode_title = "Локальный пароль";
+phrase lng_wallet_set_passcode_description = "Теперь установите пароль \nдля подтверждения ваших транзакций.";
+phrase lng_wallet_set_passcode_enter = "Введите пароль";
+phrase lng_wallet_set_passcode_repeat = "Повторите пароль";
 
-phrase lng_wallet_change_passcode_title = "Change Password";
-phrase lng_wallet_change_passcode_old = "Enter your old password";
-phrase lng_wallet_change_passcode_new = "Enter a new password";
-phrase lng_wallet_change_passcode_repeat = "Repeat the new password";
-phrase lng_wallet_change_passcode_done = "Password changed successfully.";
+phrase lng_wallet_change_passcode_title = "Измегить локальный пароль";
+phrase lng_wallet_change_passcode_old = "Введите старый пароль";
+phrase lng_wallet_change_passcode_new = "Введите новый пароль";
+phrase lng_wallet_change_passcode_repeat = "Повторите новый пароль";
+phrase lng_wallet_change_passcode_done = "Пароль успешно изменён.";
 
-phrase lng_wallet_ready_title = "Ready to go!";
-phrase lng_wallet_ready_description = "You're all set. Now you have a wallet that\nonly you control \xe2\x80\x93 directly, without\nmiddlemen or bankers.";
-phrase lng_wallet_ready_show_account = "View My Wallet";
+phrase lng_wallet_ready_title = "Всё готово!";
+phrase lng_wallet_ready_description = "Всё настроено. Теперь у вас есть кошелёк,\nкоторый контролируете только вы\xe2\x80\x93 напрямую,\nбез посредников или банкиров.";
+phrase lng_wallet_ready_show_account = "Открыть кошелёк";
 
-phrase lng_wallet_sync = "syncing...";
-phrase lng_wallet_sync_percent = "syncing... {percent}%";
-phrase lng_wallet_refreshing = "updating...";
-phrase lng_wallet_refreshed_just_now = "updated just now";
+phrase lng_wallet_sync = "синзронизация...";
+phrase lng_wallet_sync_percent = "синхронизация... {percent}%";
+phrase lng_wallet_refreshing = "обновление...";
+phrase lng_wallet_refreshed_just_now = "обновлено только что";
 
-phrase lng_wallet_cover_balance = "Your balance";
-phrase lng_wallet_cover_receive_full = "Receive Grams";
-phrase lng_wallet_cover_receive = "Receive";
-phrase lng_wallet_cover_send = "Send";
+phrase lng_wallet_cover_balance = "Ваш баланс";
+phrase lng_wallet_cover_receive_full = "Получить грамы";
+phrase lng_wallet_cover_receive = "Получить";
+phrase lng_wallet_cover_send = "Отправить";
 
-phrase lng_wallet_update = "Update Wallet";
-phrase lng_wallet_update_short = "Update";
+phrase lng_wallet_update = "Обновить кошелёк";
+phrase lng_wallet_update_short = "Обновить";
 
-phrase lng_wallet_empty_history_title = "Wallet Created";
-phrase lng_wallet_empty_history_welcome = "Welcome";
-phrase lng_wallet_empty_history_address = "Your wallet address";
+phrase lng_wallet_empty_history_title = "Кошелёк создан";
+phrase lng_wallet_empty_history_welcome = "Добро пожаловать";
+phrase lng_wallet_empty_history_address = "Адрес вашего кошелька";
 
-phrase lng_wallet_row_from = "from:";
-phrase lng_wallet_row_to = "to:";
-phrase lng_wallet_row_fees = "blockchain fees: {amount}";
-phrase lng_wallet_row_pending_date = "Pending";
-phrase lng_wallet_click_to_decrypt = "Enter password to view comment";
-phrase lng_wallet_decrypt_failed = "Decryption failed :(";
+phrase lng_wallet_row_from = "от:";
+phrase lng_wallet_row_to = "на:";
+phrase lng_wallet_row_fees = "комиссия блокчейна: {amount}";
+phrase lng_wallet_row_pending_date = "Ожидание";
+phrase lng_wallet_click_to_decrypt = "Введите пароль чтобы увидеть комментарий";
+phrase lng_wallet_decrypt_failed = "Ошибка дешифрации :(";
 
-phrase lng_wallet_view_title = "Transaction";
-phrase lng_wallet_view_transaction_fee = "{amount} transaction fee";
-phrase lng_wallet_view_storage_fee = "{amount} storage fee";
-phrase lng_wallet_view_sender = "Sender";
-phrase lng_wallet_view_recipient = "Recipient";
-phrase lng_wallet_view_date = "Date";
-phrase lng_wallet_view_comment = "Comment";
-phrase lng_wallet_view_send_to_address = "Send Grams to this address";
-phrase lng_wallet_view_send_to_recipient = "Send Grams to this Recipient";
+phrase lng_wallet_view_title = "Транзакция";
+phrase lng_wallet_view_transaction_fee = "{amount} коммиссия хранилища";
+phrase lng_wallet_view_storage_fee = "{amount} комиссия транзакции";
+phrase lng_wallet_view_sender = "Отправитель";
+phrase lng_wallet_view_recipient = "Получатель";
+phrase lng_wallet_view_date = "Дата";
+phrase lng_wallet_view_comment = "Комментарий";
+phrase lng_wallet_view_send_to_address = "Отправить грамы на этот адрес";
+phrase lng_wallet_view_send_to_recipient = "Отправить грамы этому получателю";
 
-phrase lng_wallet_receive_title = "Receive Grams";
-phrase lng_wallet_receive_description = "Share this address to receive Test Grams. Note: this link won't work for real Grams.";
-phrase lng_wallet_receive_create_invoice = "Create Invoice";
-phrase lng_wallet_receive_share = "Share Wallet Address";
-phrase lng_wallet_receive_copied = "Transfer link copied to clipboard.";
-phrase lng_wallet_receive_copied_qr = "QR Code copied to clipboard.";
+phrase lng_wallet_receive_title = "Получить грамы";
+phrase lng_wallet_receive_description = "Поделитесь этой ссылкой, чтобы получить тестовые Gram. Важно: эта ссылка не будет работать для настоящих токенов.";
+phrase lng_wallet_receive_create_invoice = "Выставить счёт";
+phrase lng_wallet_receive_share = "Поделиться адресом кошелька";
+phrase lng_wallet_receive_copied = "Адрес скопирован в буфер.";
+phrase lng_wallet_receive_copied_qr = "QR-код скопирован в буфер.";
 
-phrase lng_wallet_invoice_title = "Create Invoice";
-phrase lng_wallet_invoice_amount = "Amount";
-phrase lng_wallet_invoice_number = "Amount in grams you expect to receive";
-phrase lng_wallet_invoice_comment = "Comment (optional)";
-phrase lng_wallet_invoice_comment_about = "You can specify the amount and purpose of the payment to save the sender some time.";
-phrase lng_wallet_invoice_url = "Invoice URL";
-phrase lng_wallet_invoice_copy_url = "Copy Invoice URL";
-phrase lng_wallet_invoice_url_about = "Share this address to receive Test Grams. Note: this link won't work for real Grams.";
-phrase lng_wallet_invoice_generate_qr = "Generate QR Code";
-phrase lng_wallet_invoice_share = "Share Invoice URL";
-phrase lng_wallet_invoice_qr_title = "Invoice QR";
-phrase lng_wallet_invoice_qr_amount = "Expected amount";
-phrase lng_wallet_invoice_qr_comment = "Comment";
-phrase lng_wallet_invoice_qr_share = "Share QR Code";
-phrase lng_wallet_invoice_copied = "Invoice link copied to clipboard.";
+phrase lng_wallet_invoice_title = "Выставить счёт";
+phrase lng_wallet_invoice_amount = "Сумма";
+phrase lng_wallet_invoice_number = "Сумма в граммах, которую вы хотите получить";
+phrase lng_wallet_invoice_comment = "Комментарий (необязательно)";
+phrase lng_wallet_invoice_comment_about = "Вы можете указать сумму и назначение платежа, чтобы упростить жизнь отправителю.";
+phrase lng_wallet_invoice_url = "Ссылка на счёт";
+phrase lng_wallet_invoice_copy_url = "Скопировать ссылку на счёт";
+phrase lng_wallet_invoice_url_about = ">Поделитесь этой ссылкой, чтобы получить тестовые Gram. Важно: эта ссылка не будет работать для настоящих токенов.";
+phrase lng_wallet_invoice_generate_qr = "Сгенерировать QR-код";
+phrase lng_wallet_invoice_share = "Поделиться ссылкой на счёт";
+phrase lng_wallet_invoice_qr_title = "QR-код";
+phrase lng_wallet_invoice_qr_amount = "Ожидаемая сумма";
+phrase lng_wallet_invoice_qr_comment = "Комментарий";
+phrase lng_wallet_invoice_qr_share = "Поделиться QR-кодом";
+phrase lng_wallet_invoice_copied = "Ссылка на счёт скопирована в буфер.";
 
-phrase lng_wallet_menu_settings = "Settings";
-phrase lng_wallet_menu_change_passcode = "Change password";
-phrase lng_wallet_menu_export = "Back up wallet";
-phrase lng_wallet_menu_delete = "Delete wallet";
+phrase lng_wallet_menu_settings = "Настройки";
+phrase lng_wallet_menu_change_passcode = "Поменять пароль";
+phrase lng_wallet_menu_export = "Экспорт кошелька";
+phrase lng_wallet_menu_delete = "Удалить кошелёк";
 
-phrase lng_wallet_delete_title = "Delete Wallet";
-phrase lng_wallet_delete_about = "This will disconnect the wallet from this app. You will be able to restore your wallet using **24 secret words** \xe2\x80\x93 or import another wallet.\n\nWallets are located in the decentralized TON Blockchain. If you want the wallet to be deleted simply transfer all the Grams from it and leave it empty.";
-phrase lng_wallet_delete_disconnect = "Disconnect";
+phrase lng_wallet_delete_title = "Удалить кошелёк";
+phrase lng_wallet_delete_about = "Это действие отключит кошелёк от приложения. Вы сможете восстановить кошелёк, введя 24 секретных слова  \xe2\x80\x93 – или импортировать другой кошелёк.\n\nКошельки расположены внутри блокчейна TON, который не контролируется Telegram. Если вы хотите удалить кошелёк, просто переведите с него все Gram и оставьте пустым.";
+phrase lng_wallet_delete_disconnect = "Удалить";
 
-phrase lng_wallet_send_title = "Send Grams";
-phrase lng_wallet_send_recipient = "Recipient wallet address";
-phrase lng_wallet_send_address = "Enter wallet address";
-phrase lng_wallet_send_about = "Copy the 48-letter wallet address of the recipient here or ask them to send you a ton:// link.";
-phrase lng_wallet_send_amount = "Amount";
-phrase lng_wallet_send_balance = "Balance: {amount}";
-phrase lng_wallet_send_comment = "Comment (optional)";
-phrase lng_wallet_send_button = "Send Grams";
-phrase lng_wallet_send_button_amount = "Send {grams}";
+phrase lng_wallet_send_title = "Отправить грамы";
+phrase lng_wallet_send_recipient = "Адрес кошелька получателя";
+phrase lng_wallet_send_address = "Введите адрес кошелька";
+phrase lng_wallet_send_about = "Скопируйте 48-значный адрес кошелька получателя сюда, или попросите его отправить вам ссылку вида ton://.";
+phrase lng_wallet_send_amount = "Сумма";
+phrase lng_wallet_send_balance = "Баланс: {amount}";
+phrase lng_wallet_send_comment = "Комментарий (необязательно)";
+phrase lng_wallet_send_button = "Отправить грамы";
+phrase lng_wallet_send_button_amount = "Отправить {grams}";
 
-phrase lng_wallet_send_failed_title = "Sending failed";
-phrase lng_wallet_send_failed_text = "Could not perform the transaction. Please check your wallet's balance and try again.";
+phrase lng_wallet_send_failed_title = "Ошибка отправки";
+phrase lng_wallet_send_failed_text = "Не удалось выполнить транзакцию. Пожалуйста, проверьте баланс своего кошелька и попробуйте снова.";
 
-phrase lng_wallet_confirm_title = "Confirmation";
-phrase lng_wallet_confirm_text = "Do you want to send **{grams}** to:";
-phrase lng_wallet_confirm_fee = "Fee: ~{grams}";
-phrase lng_wallet_confirm_send = "Send Grams";
-phrase lng_wallet_confirm_warning = "**Note:** your comment \xC2\xAB{comment}\xC2\xBB **will not be encrypted**.";
+phrase lng_wallet_confirm_title = "Подтверждение";
+phrase lng_wallet_confirm_text = "Вы хотите отправить **{grams}** на:";
+phrase lng_wallet_confirm_fee = "Комиссия: ~{grams}";
+phrase lng_wallet_confirm_send = "Отправить грамы";
+phrase lng_wallet_confirm_warning = "**Заметьте:** ваш комментарий \xC2\xAB{comment}\xC2\xBB **не зашифрован**.";
 
-phrase lng_wallet_same_address_title = "Warning";
-phrase lng_wallet_same_address_text = "Sending Grams from a wallet to the same wallet doesn't make sense, you will simply waste a portion of the value on blockchain fees.";
-phrase lng_wallet_same_address_proceed = "Proceed";
+phrase lng_wallet_same_address_title = "Внимание";
+phrase lng_wallet_same_address_text = "Отправка Gram на свой кошелёк бессмысленна, вы просто потратите часть суммы на комиссию блокчейна.";
+phrase lng_wallet_same_address_proceed = "Продолжить";
 
-phrase lng_wallet_passcode_title = "Password";
-phrase lng_wallet_passcode_enter = "Enter your password";
-phrase lng_wallet_passcode_next = "Next";
-phrase lng_wallet_passcode_incorrect = "Incorrect password.";
+phrase lng_wallet_passcode_title = "Пароль";
+phrase lng_wallet_passcode_enter = "Введите ваш локальный пароль";
+phrase lng_wallet_passcode_next = "Далее";
+phrase lng_wallet_passcode_incorrect = "Неверный пароль.";
 
-phrase lng_wallet_sending_title = "Sending Grams";
-phrase lng_wallet_sending_text = "Please wait a few seconds for your\ntransaction to be processed...";
+phrase lng_wallet_sending_title = "Отправление грамов";
+phrase lng_wallet_sending_text = "Подождите пару секунд для обработки транзакции...;
 
-phrase lng_wallet_sent_title = "Done!";
-phrase lng_wallet_sent_close = "Close";
+phrase lng_wallet_sent_title = "Готово!";
+phrase lng_wallet_sent_close = "Закрыть";
 
-phrase lng_wallet_settings_title = "Settings";
-phrase lng_wallet_settings_version_title = "Version and updates";
-phrase lng_wallet_settings_autoupdate = "Update automatically";
-phrase lng_wallet_settings_version = "Version {version}";
-phrase lng_wallet_settings_checking = "Checking for updates...";
-phrase lng_wallet_settings_latest = "Latest version is installed";
-phrase lng_wallet_settings_check = "Check for updates";
-phrase lng_wallet_settings_downloading = "Downloading update {progress}...";
-phrase lng_wallet_settings_ready = "New version is ready";
-phrase lng_wallet_settings_fail = "Update check failed :(";
-phrase lng_wallet_settings_update = "Update Wallet";
-phrase lng_wallet_settings_configuration = "Server Settings";
-phrase lng_wallet_settings_update_config = "Update config automatically";
-phrase lng_wallet_settings_config_url = "Config update URL";
-phrase lng_wallet_settings_config_from_file = "Load from file";
-phrase lng_wallet_settings_blockchain_name = "Blockchain ID";
+phrase lng_wallet_settings_title = "Настройки";
+phrase lng_wallet_settings_version_title = "Версия и обновление";
+phrase lng_wallet_settings_autoupdate = "Автоматическое обновление";
+phrase lng_wallet_settings_version = "Версия {version}";
+phrase lng_wallet_settings_checking = "Проверка обновлений...";
+phrase lng_wallet_settings_latest = "Установлена последняя версия";
+phrase lng_wallet_settings_check = "Проверить обновление";
+phrase lng_wallet_settings_downloading = "Скачивание обновления {progress}...";
+phrase lng_wallet_settings_ready = "Обновление готово";
+phrase lng_wallet_settings_fail = "Ошибка проверки обновления :(";
+phrase lng_wallet_settings_update = "Обновить кошелёк";
+phrase lng_wallet_settings_configuration = "Настройки сервера";
+phrase lng_wallet_settings_update_config = "Изменить источник автоматически";
+phrase lng_wallet_settings_config_url = "Изменить источник";
+phrase lng_wallet_settings_config_from_file = "Загрузить из файла";
+phrase lng_wallet_settings_blockchain_name = "ID блокчейна";
 
-phrase lng_wallet_warning_blockchain_name = "Are you sure you want to change the blockchain ID? You don't need this unless you're testing your own TON network.\n\nIf you proceed, you will need to reconnect your wallet using 24 secret words.";
-phrase lng_wallet_bad_config = "Sorry, this config is invalid.";
-phrase lng_wallet_bad_config_url = "Could not load config from URL.";
-phrase lng_wallet_wait_pending = "Please wait until the current transaction is completed.";
-phrase lng_wallet_wait_syncing = "Please wait until the synchronisation is completed.";
+phrase lng_wallet_warning_blockchain_name = "Вы точно хотите изменить ID блокчейна? Вам не следует этого делать, если вы не тестируюете свою сеть TON.\n\nЕсли вы продолжите, вам нужно будет переподключить кошелёк используя 24 секретных слова.";
+phrase lng_wallet_bad_config = "К сожалению, этот конфиг неверен.";
+phrase lng_wallet_bad_config_url = "Приложение не смогло загрузить конфиг блокчейна. Убедитесь, что у вас работает интернет-соединение.";
+phrase lng_wallet_wait_pending = "Подождите, пока не завершится текущая транзакция.";
+phrase lng_wallet_wait_syncing = "Пожалуйста, подождите, пока кошелёк завершит синхронизацию с блокчейном TON.";
 
 phrase lng_wallet_downloaded = "{ready} / {total} {mb}";
 
