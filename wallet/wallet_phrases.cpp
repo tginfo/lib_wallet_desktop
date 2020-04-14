@@ -239,7 +239,7 @@ phrase lng_wallet_passcode_next = "Далее";
 phrase lng_wallet_passcode_incorrect = "Неверный пароль.";
 
 phrase lng_wallet_sending_title = "Отправление грамов";
-phrase lng_wallet_sending_text = "Подождите пару секунд для обработки транзакции...;
+phrase lng_wallet_sending_text = "Подождите пару секунд для обработки транзакции...";
 
 phrase lng_wallet_sent_title = "Готово!";
 phrase lng_wallet_sent_close = "Закрыть";
