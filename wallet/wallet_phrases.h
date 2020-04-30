@@ -76,6 +76,8 @@ extern phrase lng_wallet_refreshing;
 extern phrase lng_wallet_refreshed_just_now;
 
 extern phrase lng_wallet_cover_balance;
+extern phrase lng_wallet_cover_balance_test;
+extern phrase lng_wallet_cover_locked;
 extern phrase lng_wallet_cover_receive_full;
 extern phrase lng_wallet_cover_receive;
 extern phrase lng_wallet_cover_send;
@@ -89,6 +91,8 @@ extern phrase lng_wallet_empty_history_address;
 
 extern phrase lng_wallet_row_from;
 extern phrase lng_wallet_row_to;
+extern phrase lng_wallet_row_init;
+extern phrase lng_wallet_row_service;
 extern phrase lng_wallet_row_fees;
 extern phrase lng_wallet_row_pending_date;
 extern phrase lng_wallet_click_to_decrypt;
@@ -106,9 +110,11 @@ extern phrase lng_wallet_view_send_to_recipient;
 
 extern phrase lng_wallet_receive_title;
 extern phrase lng_wallet_receive_description;
+extern phrase lng_wallet_receive_description_test;
 extern phrase lng_wallet_receive_create_invoice;
 extern phrase lng_wallet_receive_share;
 extern phrase lng_wallet_receive_copied;
+extern phrase lng_wallet_receive_address_copied;
 extern phrase lng_wallet_receive_copied_qr;
 
 extern phrase lng_wallet_invoice_title;
@@ -119,6 +125,7 @@ extern phrase lng_wallet_invoice_comment_about;
 extern phrase lng_wallet_invoice_url;
 extern phrase lng_wallet_invoice_copy_url;
 extern phrase lng_wallet_invoice_url_about;
+extern phrase lng_wallet_invoice_url_about_test;
 extern phrase lng_wallet_invoice_generate_qr;
 extern phrase lng_wallet_invoice_share;
 extern phrase lng_wallet_invoice_qr_title;
@@ -185,9 +192,14 @@ extern phrase lng_wallet_settings_configuration;
 extern phrase lng_wallet_settings_update_config;
 extern phrase lng_wallet_settings_config_url;
 extern phrase lng_wallet_settings_config_from_file;
+extern phrase lng_wallet_settings_mainnet;
+extern phrase lng_wallet_settings_testnet;
 extern phrase lng_wallet_settings_blockchain_name;
 
+extern phrase lng_wallet_warning_reconnect;
 extern phrase lng_wallet_warning_blockchain_name;
+extern phrase lng_wallet_warning_to_testnet;
+extern phrase lng_wallet_warning_to_mainnet;
 extern phrase lng_wallet_bad_config;
 extern phrase lng_wallet_bad_config_url;
 extern phrase lng_wallet_wait_pending;
@@ -205,7 +217,7 @@ extern Fn<phrase(QString)> lng_wallet_grams_count_sent;
 
 namespace Wallet {
 
-inline constexpr auto kPhrasesCount = 151;
+inline constexpr auto kPhrasesCount = 163;
 
 void SetPhrases(
 	ph::details::phrase_value_array<kPhrasesCount> data,

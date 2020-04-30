@@ -66,7 +66,7 @@ std::optional<int64> ParseAmountNano(QString trimmed) {
 		const QString &text,
 		int position) {
 	constexpr auto kMaxDigitsCount = 9;
-	const auto separator = ParseAmount(1).separator;
+	const auto separator = FormatAmount(1).separator;
 
 	auto result = FixedAmount{ text, position };
 	if (text.isEmpty()) {
@@ -115,26 +115,48 @@ std::optional<int64> ParseAmountNano(QString trimmed) {
 
 } // namespace
 
-ParsedAmount ParseAmount(int64 amount, bool isSigned) {
-	auto result = ParsedAmount();
-	result.grams = amount / kOneGram;
-	auto nanos = result.nano = std::abs(amount) % kOneGram;
+FormattedAmount FormatAmount(int64 amount, FormatFlags flags) {
+	auto result = FormattedAmount();
+	const auto grams = amount / kOneGram;
+	const auto preciseNanos = std::abs(amount) % kOneGram;
+	auto roundedNanos = preciseNanos;
+	if (flags & FormatFlag::Rounded) {
+		if (std::abs(grams) >= 1'000'000 && (roundedNanos % 1'000'000)) {
+			roundedNanos -= (roundedNanos % 1'000'000);
+		} else if (std::abs(grams) >= 1'000 && (roundedNanos % 1'000)) {
+			roundedNanos -= (roundedNanos % 1'000);
+		}
+	}
+	const auto precise = (roundedNanos == preciseNanos);
+	auto nanos = preciseNanos;
 	auto zeros = 0;
 	while (zeros < kNanoDigits && nanos % 10 == 0) {
 		nanos /= 10;
 		++zeros;
 	}
-	const auto separator = QLocale::system().decimalPoint();
-	result.full = result.gramsString = QString::number(result.grams);
-	if (isSigned && amount > 0) {
-		result.full = result.gramsString = '+' + result.gramsString;
-	} else if (amount < 0 && result.grams == 0) {
-		result.full = result.gramsString = '-' + result.gramsString;
+	const auto system = QLocale::system();
+	const auto locale = (flags & FormatFlag::Simple) ? QLocale::c() : system;
+	const auto separator = system.decimalPoint();
+
+	result.gramsString = locale.toString(grams);
+	if ((flags & FormatFlag::Signed) && amount > 0) {
+		result.gramsString = locale.positiveSign() + result.gramsString;
+	} else if (amount < 0 && grams == 0) {
+		result.gramsString = locale.negativeSign() + result.gramsString;
 	}
+	result.full = result.gramsString;
 	if (zeros < kNanoDigits) {
 		result.separator = separator;
 		result.nanoString = QString("%1"
 		).arg(nanos, kNanoDigits - zeros, 10, QChar('0'));
+		if (!precise) {
+			const auto nanoLength = (std::abs(grams) >= 1'000'000)
+				? 3
+				: (std::abs(grams) >= 1'000)
+				? 6
+				: 9;
+			result.nanoString = result.nanoString.mid(0, nanoLength);
+		}
 		result.full += separator + result.nanoString;
 	}
 	return result;
@@ -142,10 +164,7 @@ ParsedAmount ParseAmount(int64 amount, bool isSigned) {
 
 std::optional<int64> ParseAmountString(const QString &amount) {
 	const auto trimmed = amount.trimmed();
-	const auto &locale = QLocale::system();
-	const auto separator = locale.toString(0.1f
-	).replace('0', QString()
-	).replace('1', QString());
+	const auto separator = QString(QLocale::system().decimalPoint());
 	const auto index1 = trimmed.indexOf('.');
 	const auto index2 = trimmed.indexOf(',');
 	const auto index3 = (separator == "." || separator == ",")
@@ -226,6 +245,14 @@ bool IsEncryptedMessage(const Ton::Transaction &data) {
 	return !message.encrypted.isEmpty() && !message.decrypted;
 }
 
+bool IsServiceTransaction(const Ton::Transaction &data) {
+	return data.outgoing.empty()
+		&& data.incoming.source.isEmpty()
+		&& data.incoming.message.text.isEmpty()
+		&& data.incoming.message.encrypted.isEmpty()
+		&& !data.incoming.value;
+}
+
 QString ExtractMessage(const Ton::Transaction &data) {
 	const auto &message = data.outgoing.empty()
 		? data.incoming.message
@@ -258,14 +285,20 @@ QString TransferLink(
 }
 
 not_null<Ui::FlatLabel*> AddBoxSubtitle(
-		not_null<Ui::GenericBox*> box,
+		not_null<Ui::VerticalLayout*> container,
 		rpl::producer<QString> text) {
-	return box->addRow(
+	return container->add(
 		object_ptr<Ui::FlatLabel>(
-			box,
+			container,
 			std::move(text),
 			st::walletSubsectionTitle),
 		st::walletSubsectionTitlePadding);
+}
+
+not_null<Ui::FlatLabel*> AddBoxSubtitle(
+		not_null<Ui::GenericBox*> box,
+		rpl::producer<QString> text) {
+	return AddBoxSubtitle(box->verticalLayout(), std::move(text));
 }
 
 not_null<Ui::InputField*> CreateAmountInput(
@@ -277,7 +310,9 @@ not_null<Ui::InputField*> CreateAmountInput(
 		st::walletInput,
 		Ui::InputField::Mode::SingleLine,
 		std::move(placeholder),
-		(amount > 0 ? ParseAmount(amount).full : QString()));
+		(amount > 0
+			? FormatAmount(amount, FormatFlag::Simple).full
+			: QString()));
 	const auto lastAmountValue = std::make_shared<QString>();
 	Ui::Connect(result, &Ui::InputField::changed, [=] {
 		Ui::PostponeCall(result, [=] {

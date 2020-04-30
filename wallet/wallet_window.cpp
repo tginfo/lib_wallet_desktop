@@ -29,6 +29,7 @@
 #include "base/platform/base_platform_process.h"
 #include "base/qt_signal_producer.h"
 #include "base/last_user_input.h"
+#include "base/algorithm.h"
 #include "ui/address_label.h"
 #include "ui/widgets/window.h"
 #include "ui/widgets/labels.h"
@@ -43,6 +44,7 @@
 
 #include <QtCore/QMimeData>
 #include <QtCore/QDir>
+#include <QtCore/QRegularExpression>
 #include <QtGui/QtEvents>
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
@@ -58,6 +60,14 @@ constexpr auto kRefreshEachDelay = 10 * crl::time(1000);
 constexpr auto kRefreshInactiveDelay = 60 * crl::time(1000);
 constexpr auto kRefreshWhileSendingDelay = 3 * crl::time(1000);
 
+[[nodiscard]] bool ValidateTransferLink(const QString &link) {
+	return QRegularExpression(
+		QString("^((ton://)?transfer/)?[a-z0-9_\\-]{%1}/?($|\\?)"
+		).arg(kAddressLength),
+		QRegularExpression::CaseInsensitiveOption
+	).match(link.trimmed()).hasMatch();
+}
+
 } // namespace
 
 Window::Window(
@@ -68,10 +78,11 @@ Window::Window(
 , _layers(std::make_unique<Ui::LayerManager>(_window->body()))
 , _updateInfo(updateInfo) {
 	init();
-	if (_wallet->publicKeys().empty()) {
+	const auto keys = _wallet->publicKeys();
+	if (keys.empty()) {
 		showCreate();
 	} else {
-		showAccount(_wallet->publicKeys()[0]);
+		showAccount(keys[0]);
 	}
 }
 
@@ -96,22 +107,28 @@ void Window::init() {
 }
 
 void Window::startWallet() {
-	const auto &settings = _wallet->settings();
-	if (settings.useCustomConfig) {
+	const auto &was = _wallet->settings().net();
+	if (was.useCustomConfig) {
 		return;
 	}
 	const auto loaded = [=](Ton::Result<QByteArray> result) {
 		auto copy = _wallet->settings();
-		if (result && *result != copy.config) {
-			copy.config = *result;
+		if (result
+			&& !copy.net().useCustomConfig
+			&& copy.net().configUrl == was.configUrl
+			&& *result != copy.net().config) {
+			copy.net().config = *result;
 			saveSettingsSure(copy, [=] {
 				if (_viewer) {
 					refreshNow();
 				}
 			});
 		}
+		if (!_viewer) {
+			_wallet->sync();
+		}
 	};
-	_wallet->loadWebResource(settings.configUrl, std::move(loaded));
+	_wallet->loadWebResource(was.configUrl, std::move(loaded));
 }
 
 void Window::updatePalette() {
@@ -185,7 +202,8 @@ void Window::createImportKey(const std::vector<QString> &words) {
 	}
 	_wallet->importKey(words, crl::guard(this, [=](Ton::Result<> result) {
 		if (result) {
-			_createManager->showPasscode();
+			_createSyncing = rpl::event_stream<QString>();
+			_createManager->showPasscode(_createSyncing.events());
 		} else if (IsIncorrectMnemonicError(result.error())) {
 			_importing = false;
 			createShowIncorrectImport();
@@ -318,6 +336,50 @@ void Window::createSavePasscode(
 	if (std::exchange(*guard, true)) {
 		return;
 	}
+	if (!_importing) {
+		createSaveKey(passcode, QString(), std::move(guard));
+		return;
+	}
+	rpl::single(
+		Ton::Update{ Ton::SyncState() }
+	) | rpl::then(
+		_wallet->updates()
+	) | rpl::map([](const Ton::Update &update) {
+		return update.data.match([&](const Ton::SyncState &data) {
+			if (!data.valid()
+				|| data.current == data.to
+				|| data.current == data.from) {
+				return ph::lng_wallet_sync();
+			} else {
+				const auto percent = QString::number(
+					(100 * (data.current - data.from)
+						/ (data.to - data.from)));
+				return ph::lng_wallet_sync_percent(
+				) | rpl::map([=](QString &&text) {
+					return text.replace("{percent}", percent);
+				}) | rpl::type_erased();
+			}
+		}, [&](auto&&) {
+			return ph::lng_wallet_sync();
+		});
+	}) | rpl::flatten_latest(
+	) | rpl::start_to_stream(_createSyncing, _createManager->lifetime());
+
+	const auto done = [=](Ton::Result<QString> result) {
+		if (!result) {
+			*guard = false;
+			showGenericError(result.error());
+			return;
+		}
+		createSaveKey(passcode, *result, guard);
+	};
+	_wallet->queryWalletAddress(crl::guard(this, done));
+}
+
+void Window::createSaveKey(
+		const QByteArray &passcode,
+		const QString &address,
+		std::shared_ptr<bool> guard) {
 	const auto done = [=](Ton::Result<QByteArray> result) {
 		*guard = false;
 		if (!result) {
@@ -326,7 +388,7 @@ void Window::createSavePasscode(
 		}
 		_createManager->showReady(*result);
 	};
-	_wallet->saveKey(passcode, crl::guard(this, done));
+	_wallet->saveKey(passcode, address, crl::guard(this, done));
 }
 
 void Window::showAccount(const QByteArray &publicKey, bool justCreated) {
@@ -334,7 +396,7 @@ void Window::showAccount(const QByteArray &publicKey, bool justCreated) {
 	_importing = false;
 	_createManager = nullptr;
 
-	_address = _wallet->getAddress(publicKey);
+	_address = _wallet->getUsedAddress(publicKey);
 	_viewer = _wallet->createAccountViewer(publicKey, _address);
 	_state = _viewer->state() | rpl::map([](Ton::WalletViewerState &&state) {
 		return std::move(state.wallet);
@@ -356,6 +418,8 @@ void Window::showAccount(const QByteArray &publicKey, bool justCreated) {
 	data.updates = _wallet->updates();
 	data.collectEncrypted = _collectEncryptedRequests.events();
 	data.updateDecrypted = _decrypted.events();
+	data.share = shareAddressCallback();
+	data.useTestNetwork = _wallet->settings().useTestNetwork;
 	_info = std::make_unique<Info>(_window->body(), std::move(data));
 	_layers->raise();
 
@@ -401,6 +465,7 @@ void Window::showAccount(const QByteArray &publicKey, bool justCreated) {
 			std::move(data),
 			_collectEncryptedRequests.events(),
 			_decrypted.events(),
+			shareAddressCallback(),
 			[=] { decryptEverything(publicKey); },
 			send));
 	}, _info->lifetime());
@@ -599,7 +664,7 @@ not_null<Ui::RpWidget*> Window::widget() const {
 }
 
 bool Window::handleLinkOpen(const QString &link) {
-	if (_viewer) {
+	if (_viewer && ValidateTransferLink(link)) {
 		sendGrams(link);
 	}
 	return true;
@@ -609,6 +674,16 @@ void Window::showConfigUpgrade(Ton::ConfigUpgrade upgrade) {
 	if (upgrade == Ton::ConfigUpgrade::TestnetToTestnet2) {
 		const auto message = "The TON test network has been reset.\n"
 			"TON testnet2 is now operational.";
+		showSimpleError(
+			ph::lng_wallet_warning(),
+			rpl::single(QString(message)),
+			ph::lng_wallet_ok());
+	} else if (upgrade == Ton::ConfigUpgrade::TestnetToMainnet) {
+		const auto message = "The Gram Wallet has switched "
+			"from the testing to the main network.\n\nIn case you want "
+			"to perform more testing you can switch back "
+			"to the Test Gram network in Settings "
+			"and reconnect your wallet using 24 secret words.";
 		showSimpleError(
 			ph::lng_wallet_warning(),
 			rpl::single(QString(message)),
@@ -640,23 +715,24 @@ void Window::sendGrams(const QString &invoice) {
 	const auto send = [=](
 			const PreparedInvoice &invoice,
 			Fn<void(InvoiceField)> showError) {
+		const auto account = _state.current().account;
+		const auto available = account.fullBalance - account.lockedBalance;
 		if (!Ton::Wallet::CheckAddress(invoice.address)) {
 			showError(InvoiceField::Address);
-		} else if (invoice.amount > _state.current().account.balance
-			|| invoice.amount <= 0) {
+		} else if (invoice.amount > available || invoice.amount <= 0) {
 			showError(InvoiceField::Amount);
 		} else {
 			confirmTransaction(invoice, showError, checking);
 		}
 	};
-	auto balance = _state.value(
+	auto unlockedBalance = _state.value(
 	) | rpl::map([](const Ton::WalletState &state) {
-		return state.account.balance;
+		return state.account.fullBalance - state.account.lockedBalance;
 	});
 	auto box = Box(
 		SendGramsBox,
 		invoice,
-		std::move(balance),
+		std::move(unlockedBalance),
 		send);
 	_sendBox = box.data();
 	_layers->showBox(std::move(box));
@@ -666,7 +742,7 @@ void Window::confirmTransaction(
 		const PreparedInvoice &invoice,
 		Fn<void(InvoiceField)> showInvoiceError,
 		std::shared_ptr<bool> guard) {
-	if (*guard) {
+	if (*guard || !_sendBox) {
 		return;
 	}
 	*guard = true;
@@ -693,7 +769,7 @@ void Window::confirmTransaction(
 	_wallet->checkSendGrams(
 		_wallet->publicKeys().front(),
 		TransactionFromInvoice(invoice),
-		crl::guard(this, done));
+		crl::guard(_sendBox.data(), done));
 }
 
 void Window::askSendPassword(
@@ -761,8 +837,17 @@ void Window::showSendConfirmation(
 		const PreparedInvoice &invoice,
 		const Ton::TransactionCheckResult &checkResult,
 		Fn<void(InvoiceField)> showInvoiceError) {
-	const auto balance = _state.current().account.balance;
-	if (invoice.amount + checkResult.sourceFees.sum() > balance) {
+	const auto account = _state.current().account;
+	const auto available = account.fullBalance - account.lockedBalance;
+	// This may be enabled in the future, but right now it is not safe.
+	// You could think that you transfer specific amount, but really
+	// you're transferring all the remaining funds, even if they change
+	// while the transfer request is already being sent.
+	//
+	//if (invoice.amount == available && account.lockedBalance == 0) {
+	//	// Special case transaction where we transfer all that is left.
+	//} else
+	if (invoice.amount + checkResult.sourceFees.sum() > available) {
 		showInvoiceError(InvoiceField::Amount);
 		return;
 	}
@@ -847,18 +932,19 @@ void Window::receiveGrams() {
 		ReceiveGramsBox,
 		_address,
 		TransferLink(_address),
+		_testnet,
 		[=] { createInvoice(); },
-		shareCallback(
-			ph::lng_wallet_receive_copied(ph::now),
-			ph::lng_wallet_receive_copied_qr(ph::now))));
+		shareAddressCallback()));
 }
 
 void Window::createInvoice() {
 	_layers->showBox(Box(
 		CreateInvoiceBox,
 		_address,
+		_testnet,
 		[=](const QString &link) { showInvoiceQr(link); },
 		shareCallback(
+			ph::lng_wallet_invoice_copied(ph::now),
 			ph::lng_wallet_invoice_copied(ph::now),
 			ph::lng_wallet_receive_copied_qr(ph::now))));
 }
@@ -869,32 +955,39 @@ void Window::showInvoiceQr(const QString &link) {
 		link,
 		shareCallback(
 			ph::lng_wallet_invoice_copied(ph::now),
+			ph::lng_wallet_invoice_copied(ph::now),
 			ph::lng_wallet_receive_copied_qr(ph::now))));
 }
 
 Fn<void(QImage, QString)> Window::shareCallback(
-		const QString &copied,
+		const QString &linkCopied,
+		const QString &textCopied,
 		const QString &qr) {
-	return [=](const QImage &image, const QString &link) {
+	return [=](const QImage &image, const QString &text) {
 		if (!image.isNull()) {
 			auto mime = std::make_unique<QMimeData>();
-			if (!link.isEmpty()) {
-				mime->setText(link);
+			if (!text.isEmpty()) {
+				mime->setText(text);
 			}
 			mime->setImageData(image);
 			QGuiApplication::clipboard()->setMimeData(mime.release());
 			showToast(qr);
 		} else {
-			QGuiApplication::clipboard()->setText(link);
-			showToast(copied);
+			QGuiApplication::clipboard()->setText(text);
+			showToast((text.indexOf("://") >= 0) ? linkCopied : textCopied);
 		}
 	};
 }
 
+Fn<void(QImage, QString)> Window::shareAddressCallback() {
+	return shareCallback(
+		ph::lng_wallet_receive_copied(ph::now),
+		ph::lng_wallet_receive_address_copied(ph::now),
+		ph::lng_wallet_receive_copied_qr(ph::now));
+}
+
 void Window::showToast(const QString &text) {
-	auto toast = Ui::Toast::Config();
-	toast.text = text;
-	Ui::Toast::Show(_window.get(), toast);
+	Ui::Toast::Show(_window.get(), text);
 }
 
 void Window::changePassword() {
@@ -962,7 +1055,7 @@ void Window::checkConfigFromContent(
 }
 
 void Window::saveSettings(const Ton::Settings &settings) {
-	if (settings.useCustomConfig) {
+	if (settings.net().useCustomConfig) {
 		saveSettingsWithLoaded(settings);
 		return;
 	}
@@ -982,16 +1075,22 @@ void Window::saveSettings(const Ton::Settings &settings) {
 		}
 		checkConfigFromContent(*result, [=](QByteArray config) {
 			auto copy = settings;
-			copy.config = config;
+			copy.net().config = config;
 			saveSettingsWithLoaded(copy);
 		});
 	};
-	_wallet->loadWebResource(settings.configUrl, loaded);
+	_wallet->loadWebResource(settings.net().configUrl, loaded);
 }
 
 void Window::saveSettingsWithLoaded(const Ton::Settings &settings) {
 	const auto &current = _wallet->settings();
-	const auto detach = (settings.blockchainName != current.blockchainName);
+	const auto change = (settings.useTestNetwork != current.useTestNetwork);
+	if (change) {
+		showSwitchTestNetworkWarning(settings);
+		return;
+	}
+	const auto detach = (settings.net().blockchainName
+		!= current.net().blockchainName);
 	if (detach) {
 		showBlockchainNameWarning(settings);
 		return;
@@ -1017,6 +1116,9 @@ void Window::saveSettingsSure(
 	};
 	_wallet->updateSettings(settings, [=](Ton::Result<> result) {
 		if (!result) {
+			if (_wallet->publicKeys().empty()) {
+				showCreate();
+			}
 			showError(result.error());
 		} else {
 			done();
@@ -1032,13 +1134,36 @@ void Window::refreshNow() {
 	});
 }
 
+void Window::showSwitchTestNetworkWarning(const Ton::Settings &settings) {
+	showSettingsWithLogoutWarning(
+		settings,
+		(settings.useTestNetwork
+			? ph::lng_wallet_warning_to_testnet()
+			: ph::lng_wallet_warning_to_mainnet()));
+}
+
 void Window::showBlockchainNameWarning(const Ton::Settings &settings) {
+	Expects(settings.useTestNetwork);
+
+	showSettingsWithLogoutWarning(
+		settings,
+		ph::lng_wallet_warning_blockchain_name());
+}
+
+void Window::showSettingsWithLogoutWarning(
+		const Ton::Settings &settings,
+		rpl::producer<QString> text) {
+	using namespace rpl::mappers;
+
 	const auto saving = std::make_shared<bool>();
-	auto box = Box([=](not_null<Ui::GenericBox*> box) {
+	auto box = Box([=](not_null<Ui::GenericBox*> box) mutable {
 		box->setTitle(ph::lng_wallet_warning());
 		box->addRow(object_ptr<Ui::FlatLabel>(
 			box,
-			ph::lng_wallet_warning_blockchain_name(),
+			rpl::combine(
+				std::move(text),
+				ph::lng_wallet_warning_reconnect()
+			) | rpl::map(_1 + "\n\n" + _2),
 			st::walletLabel));
 		box->addButton(ph::lng_wallet_continue(), [=] {
 			if (std::exchange(*saving, true)) {

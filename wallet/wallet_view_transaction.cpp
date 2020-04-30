@@ -31,7 +31,9 @@ object_ptr<Ui::RpWidget> CreateSummary(
 		const Ton::Transaction &data) {
 	const auto feeSkip = st::walletTransactionFeeSkip;
 	const auto secondFeeSkip = st::walletTransactionSecondFeeSkip;
+	const auto service = IsServiceTransaction(data);
 	const auto height = st::walletTransactionSummaryHeight
+		- (service ? st::walletTransactionValue.diamond : 0)
 		+ (data.otherFee ? (st::normalFont->height + feeSkip) : 0)
 		+ (data.storageFee
 			? (st::normalFont->height
@@ -41,16 +43,22 @@ object_ptr<Ui::RpWidget> CreateSummary(
 		parent,
 		height);
 
-	const auto balance = result->lifetime().make_state<Ui::AmountLabel>(
-		result.data(),
-		rpl::single(ParseAmount(CalculateValue(data), true)),
-		st::walletTransactionValue);
+	const auto value = CalculateValue(data);
+	const auto useSmallStyle = (std::abs(value) >= 1'000'000);
+	const auto balance = !service
+		? result->lifetime().make_state<Ui::AmountLabel>(
+			result.data(),
+			rpl::single(FormatAmount(value, FormatFlag::Signed)),
+			(useSmallStyle
+				? st::walletTransactionValueSmall
+				: st::walletTransactionValue))
+		: nullptr;
 	const auto otherFee = data.otherFee
 		? Ui::CreateChild<Ui::FlatLabel>(
 			result.data(),
 			ph::lng_wallet_view_transaction_fee(ph::now).replace(
 				"{amount}",
-				ParseAmount(data.otherFee).full),
+				FormatAmount(data.otherFee).full),
 			st::walletTransactionFee)
 		: nullptr;
 	const auto storageFee = data.storageFee
@@ -58,20 +66,21 @@ object_ptr<Ui::RpWidget> CreateSummary(
 			result.data(),
 			ph::lng_wallet_view_storage_fee(ph::now).replace(
 				"{amount}",
-				ParseAmount(data.storageFee).full),
+				FormatAmount(data.storageFee).full),
 			st::walletTransactionFee)
 		: nullptr;
 	rpl::combine(
 		result->widthValue(),
-		balance->widthValue(),
+		balance ? balance->widthValue() : rpl::single(0),
 		otherFee ? otherFee->widthValue() : rpl::single(0),
 		storageFee ? storageFee->widthValue() : rpl::single(0)
 	) | rpl::start_with_next([=](int width, int bwidth, int, int) {
 		auto top = st::walletTransactionValueTop;
 
-		balance->move((width - bwidth) / 2, top);
-
-		top += balance->height() + feeSkip;
+		if (balance) {
+			balance->move((width - bwidth) / 2, top);
+			top += balance->height() + feeSkip;
+		}
 		if (otherFee) {
 			otherFee->move((width - otherFee->width()) / 2, top);
 			top += otherFee->height() + secondFeeSkip;
@@ -141,6 +150,7 @@ void ViewTransactionBox(
 			not_null<std::vector<Ton::Transaction>*>> collectEncrypted,
 		rpl::producer<
 			not_null<const std::vector<Ton::Transaction>*>> decrypted,
+		Fn<void(QImage, QString)> share,
 		Fn<void()> decryptComment,
 		Fn<void(QString)> send) {
 	struct DecryptedText {
@@ -148,8 +158,14 @@ void ViewTransactionBox(
 		bool success = false;
 	};
 
-	box->setTitle(ph::lng_wallet_view_title());
-	box->setStyle(st::walletBox);
+	const auto service = IsServiceTransaction(data);
+
+	box->setTitle(data.initializing
+		? ph::lng_wallet_row_init()
+		: service
+		? ph::lng_wallet_row_service()
+		: ph::lng_wallet_view_title());
+	box->setStyle(service ? st::walletNoButtonsBox : st::walletBox);
 
 	const auto id = data.id;
 	const auto address = ExtractAddress(data);
@@ -194,20 +210,23 @@ void ViewTransactionBox(
 
 	box->addRow(CreateSummary(box, data));
 
-	AddBoxSubtitle(box, incoming
-		? ph::lng_wallet_view_sender()
-		: ph::lng_wallet_view_recipient());
-	box->addRow(
-		object_ptr<Ui::RpWidget>::fromRaw(Ui::CreateAddressLabel(
-			box,
-			address,
-			st::walletTransactionAddress)),
-		{
-			st::boxRowPadding.left(),
-			st::boxRowPadding.top(),
-			st::boxRowPadding.right(),
-			st::walletTransactionDateTop,
-		});
+	if (!service) {
+		AddBoxSubtitle(box, incoming
+			? ph::lng_wallet_view_sender()
+			: ph::lng_wallet_view_recipient());
+		box->addRow(
+			object_ptr<Ui::RpWidget>::fromRaw(Ui::CreateAddressLabel(
+				box,
+				address,
+				st::walletTransactionAddress,
+				[=] { share(QImage(), address); })),
+			{
+				st::boxRowPadding.left(),
+				st::boxRowPadding.top(),
+				st::boxRowPadding.right(),
+				st::walletTransactionDateTop,
+			});
+	}
 
 	AddBoxSubtitle(box, ph::lng_wallet_view_date());
 	box->addRow(
@@ -267,14 +286,16 @@ void ViewTransactionBox(
 		box,
 		st::walletTransactionBottomSkip));
 
-	auto text = incoming
-		? ph::lng_wallet_view_send_to_address()
-		: ph::lng_wallet_view_send_to_recipient();
-	box->addButton(
-		std::move(text),
-		[=] { send(address); },
-		st::walletBottomButton
-	)->setTextTransform(Ui::RoundButton::TextTransform::NoTransform);
+	if (!service) {
+		auto text = incoming
+			? ph::lng_wallet_view_send_to_address()
+			: ph::lng_wallet_view_send_to_recipient();
+		box->addButton(
+			std::move(text),
+			[=] { send(address); },
+			st::walletBottomButton
+		)->setTextTransform(Ui::RoundButton::TextTransform::NoTransform);
+	}
 }
 
 } // namespace Wallet

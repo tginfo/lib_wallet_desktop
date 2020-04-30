@@ -27,7 +27,7 @@ struct FixedAddress {
 };
 
 [[nodiscard]] QString AmountSeparator() {
-	return ParseAmount(1).separator;
+	return FormatAmount(1).separator;
 }
 
 [[nodiscard]] FixedAddress FixAddressInput(
@@ -48,7 +48,7 @@ struct FixedAddress {
 void SendGramsBox(
 		not_null<Ui::GenericBox*> box,
 		const QString &invoice,
-		rpl::producer<int64> balance,
+		rpl::producer<int64> unlockedBalance,
 		Fn<void(PreparedInvoice, Fn<void(InvoiceField)> error)> done) {
 	const auto prepared = ParseInvoice(invoice);
 	const auto funds = std::make_shared<int64>();
@@ -84,11 +84,11 @@ void SendGramsBox(
 
 	auto balanceText = rpl::combine(
 		ph::lng_wallet_send_balance(),
-		rpl::duplicate(balance)
+		rpl::duplicate(unlockedBalance)
 	) | rpl::map([](QString &&phrase, int64 value) {
 		return phrase.replace(
 			"{amount}",
-			ParseAmount(std::max(value, 0LL)).full);
+			FormatAmount(std::max(value, 0LL), FormatFlag::Rounded).full);
 	});
 
 	const auto diamondLabel = Ui::CreateInlineDiamond(
@@ -134,7 +134,7 @@ void SendGramsBox(
 		}
 	};
 	std::move(
-		balance
+		unlockedBalance
 	) | rpl::start_with_next([=](int64 value) {
 		*funds = value;
 		checkFunds(amount->getLastText());
@@ -156,7 +156,9 @@ void SendGramsBox(
 				address->setCursorPosition(fixed.position);
 			}
 			if (fixed.invoice.amount > 0) {
-				amount->setText(ParseAmount(fixed.invoice.amount).full);
+				amount->setText(FormatAmount(
+					fixed.invoice.amount,
+					FormatFlag::Simple).full);
 			}
 			if (!fixed.invoice.comment.isEmpty()) {
 				comment->setText(fixed.invoice.comment);
@@ -235,7 +237,7 @@ void SendGramsBox(
 		return (value > 0)
 			? rpl::combine(
 				ph::lng_wallet_send_button_amount(),
-				ph::lng_wallet_grams_count(ParseAmount(value).full)()
+				ph::lng_wallet_grams_count(FormatAmount(value).full)()
 			) | replaceGramsTag()
 			: ph::lng_wallet_send_button();
 	}) | rpl::flatten_latest();

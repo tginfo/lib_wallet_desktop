@@ -11,6 +11,7 @@
 #include "wallet/wallet_common.h"
 #include "ton/ton_settings.h"
 #include "ui/widgets/buttons.h"
+#include "ui/widgets/checkbox.h"
 #include "ui/widgets/box_content_divider.h"
 #include "ui/widgets/input_fields.h"
 #include "ui/wrap/slide_wrap.h"
@@ -201,6 +202,11 @@ void SettingsBox(
 		Fn<void(Ton::Settings)> save) {
 	using namespace rpl::mappers;
 
+	const auto &was = settings.net();
+	const auto modified = box->lifetime().make_state<QByteArray>(was.config);
+	const auto downloadOn = box->lifetime().make_state<rpl::variable<bool>>(
+		!was.useCustomConfig);
+
 	box->setTitle(ph::lng_wallet_settings_title());
 
 	if (updateInfo) {
@@ -217,7 +223,7 @@ void SettingsBox(
 			ph::lng_wallet_settings_update_config(),
 			st::defaultSettingsButton),
 		QMargins()
-	)->toggleOn(rpl::single(!settings.useCustomConfig));
+	)->toggleOn(downloadOn->value());
 
 	const auto filenames = box->lifetime().make_state<
 		rpl::event_stream<QString>>();
@@ -237,7 +243,6 @@ void SettingsBox(
 		QMargins()
 	)->setDuration(0);
 
-	const auto modified = std::make_shared<QByteArray>(settings.config);
 	const auto chooseFromFile = [=] {
 		const auto weak = Ui::MakeWeak(box.get());
 		const auto all = Platform::IsWindows() ? "(*.*)" : "(*)";
@@ -276,7 +281,7 @@ void SettingsBox(
 				box,
 				st::walletInput,
 				ph::lng_wallet_settings_config_url(),
-				settings.configUrl),
+				was.configUrl),
 			QMargins(0, 0, 0, heightDelta)),
 			(st::boxRowPadding
 				+ QMargins(0, 0, 0, st::walletSettingsBlockchainNameSkip)));
@@ -293,26 +298,79 @@ void SettingsBox(
 	}, download->lifetime());
 
 	AddBoxSubtitle(box, ph::lng_wallet_settings_blockchain_name());
-	const auto name = box->addRow(object_ptr<Ui::InputField>(
-		box,
-		st::walletInput,
-		rpl::single(QString()),
-		settings.blockchainName));
+
+	const auto testnetWrap = box->addRow(
+		object_ptr<Ui::FixedHeightWidget>(
+			box,
+			0/*(st::defaultCheckbox.margin.top() // #TODO postponed
+				+ st::defaultRadio.diameter
+				+ st::defaultCheckbox.margin.bottom())*/),
+		QMargins());
+	const auto net = std::make_shared<Ui::RadiobuttonGroup>(1);
+		//settings.useTestNetwork ? 1 : 0); // #TODO postponed
+	const auto mainnet = Ui::CreateChild<Ui::Radiobutton>(
+		testnetWrap,
+		net,
+		0,
+		ph::lng_wallet_settings_mainnet(ph::now));
+	const auto testnet = Ui::CreateChild<Ui::Radiobutton>(
+		testnetWrap,
+		net,
+		1,
+		ph::lng_wallet_settings_testnet(ph::now));
+	testnetWrap->widthValue(
+	) | rpl::start_with_next([=] {
+		const auto left = st::boxRowPadding.left();
+		mainnet->moveToLeft(left, st::defaultCheckbox.margin.top());
+		testnet->moveToLeft(
+			left + mainnet->widthNoMargins() + st::boxMediumSkip,
+			st::defaultCheckbox.margin.top());
+	}, testnetWrap->lifetime());
+
+	const auto nameWrap = box->addRow(
+		object_ptr<Ui::SlideWrap<Ui::VerticalLayout>>(
+			box,
+			object_ptr<Ui::VerticalLayout>(box)),
+		QMargins()
+	)->setDuration(0)->toggleOn(rpl::single(settings.useTestNetwork));
+	const auto nameContainer = nameWrap->entity();
+	const auto name = nameContainer->add(
+		object_ptr<Ui::InputField>(
+			nameContainer,
+			st::walletInput,
+			rpl::single(QString()),
+			settings.test.blockchainName),
+		st::boxRowPadding);
+
+	net->setChangedCallback([=](int test) {
+		const auto &now = settings.net(test);
+		*modified = now.config;
+		*downloadOn = !now.useCustomConfig;
+		nameWrap->toggle(test, anim::type::instant);
+		url->entity()->setText(now.configUrl);
+	});
 
 	const auto collectSettings = [=] {
-		auto result = settings;
-		result.blockchainName = name->getLastText().trimmed();
-		result.useCustomConfig = custom->toggled();
-		if (result.useCustomConfig) {
-			result.config = *modified;
+		auto result = settings; // #TODO postponed
+		result.useTestNetwork = true;// (net->value() == 1);
+		auto &change = result.net();
+		if (result.useTestNetwork) {
+			change.blockchainName = name->getLastText().trimmed();
+		}
+		change.useCustomConfig = custom->toggled();
+		if (change.useCustomConfig) {
+			change.config = *modified;
 		} else {
-			result.configUrl = url->entity()->getLastText().trimmed();
+			change.configUrl = url->entity()->getLastText().trimmed();
 		}
 		return result;
 	};
 
 	const auto validate = [=] {
-		if (name->getLastText().trimmed().isEmpty()) {
+		const auto updated = name->getLastText().trimmed();
+		if (updated.isEmpty()
+			|| (true// (net->value() == 1) // #TODO postponed
+				&& !updated.compare("mainnet", Qt::CaseInsensitive))) {
 			name->showError();
 			return false;
 		} else if (!custom->toggled()

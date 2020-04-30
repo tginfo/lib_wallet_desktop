@@ -126,6 +126,11 @@ walletImportInputField: InputField(walletCheckInputField) {
 
 walletStepPasscodeLottiePosition: point(10px, 26px);
 walletStepPasscodeLottieSize: 104px;
+walletStepPasscodeSyncing: FlatLabel(defaultFlatLabel) {
+	textFg: windowSubTextFg;
+	align: align(top);
+}
+walletStepPasscodeSyncingTop: 10px;
 walletSetPasscodeEnterTop: 282px;
 walletSetPasscodeRepeatTop: 342px;
 
@@ -201,6 +206,14 @@ walletCoverBalance: WalletAmountLabel {
 walletCoverLabelTop: 53px;
 walletCoverLabel: FlatLabel(defaultFlatLabel) {
 	textFg: walletSubBalanceFg;
+}
+walletCoverLocked: FlatLabel(defaultFlatLabel) {
+	style: semiboldTextStyle;
+	textFg: walletBalanceFg;
+}
+walletCoverLockedLabel: FlatLabel(defaultFlatLabel) {
+	style: semiboldTextStyle;
+	textFg: walletTopLabelFg;
 }
 walletCoverButtonWidthFull: 300px;
 walletCoverButtonWidth: 140px;
@@ -296,6 +309,9 @@ walletBox: Box(defaultBox) {
 	buttonPadding: margins(16px, 16px, 16px, 16px);
 	buttonHeight: 39px;
 }
+walletNoButtonsBox: Box(walletBox) {
+	buttonHeight: 0px;
+}
 walletBottomButton: RoundButton(defaultActiveButton) {
 	width: 288px;
 	height: 39px;
@@ -355,6 +371,22 @@ walletTransactionValue: WalletAmountLabel(walletCoverBalance) {
 	}
 	diamond: 33px;
 	diamondPosition: point(6px, 2px);
+}
+walletTransactionValueSmall: WalletAmountLabel(walletCoverBalance) {
+	large: FlatLabel(walletCoverBalanceLarge) {
+		textFg: windowBoldFg;
+		style: TextStyle(defaultTextStyle) {
+			font: font(24px semibold);
+		}
+	}
+	small: FlatLabel(walletCoverBalanceSmall) {
+		textFg: windowBoldFg;
+		style: TextStyle(defaultTextStyle) {
+			font: font(16px semibold);
+		}
+	}
+	diamond: 29px;
+	diamondPosition: point(5px, 1px);
 }
 walletTransactionValueTop: 5px;
 walletTransactionFee: FlatLabel(defaultFlatLabel) {
